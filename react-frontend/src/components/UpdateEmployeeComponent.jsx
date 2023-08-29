@@ -9,7 +9,8 @@ class UpdateEmployeeComponent extends Component {
             id: this.props.match.params.id,
             firstName: '',
             lastName: '',
-            emailId: ''
+            emailId: '',
+            empStatus:'',
         }
         this.changeFirstNameHandler = this.changeFirstNameHandler.bind(this);
         this.changeLastNameHandler = this.changeLastNameHandler.bind(this);
@@ -21,14 +22,16 @@ class UpdateEmployeeComponent extends Component {
             let employee = res.data;
             this.setState({firstName: employee.firstName,
                 lastName: employee.lastName,
-                emailId : employee.emailId
+                emailId : employee.emailId,
+                empStatus : employee.empStatus,
             });
         });
     }
 
     updateEmployee = (e) => {
         e.preventDefault();
-        let employee = {firstName: this.state.firstName, lastName: this.state.lastName, emailId: this.state.emailId};
+        let employee = {firstName: this.state.firstName, lastName: this.state.lastName, emailId: this.state.emailId,
+            empStatus: this.state.empStatus};
         console.log('employee => ' + JSON.stringify(employee));
         console.log('id => ' + JSON.stringify(this.state.id));
         EmployeeService.updateEmployee(employee, this.state.id).then( res => {
@@ -47,6 +50,10 @@ class UpdateEmployeeComponent extends Component {
     changeEmailHandler= (event) => {
         this.setState({emailId: event.target.value});
     }
+    changeEmpStatusHandler= (event) => {
+        this.setState({empStatus: event.target.value});
+    }
+    
 
     cancel(){
         this.props.history.push('/employees');
@@ -76,6 +83,11 @@ class UpdateEmployeeComponent extends Component {
                                             <label> Email Id: </label>
                                             <input placeholder="Email Address" name="emailId" className="form-control" 
                                                 value={this.state.emailId} onChange={this.changeEmailHandler}/>
+                                        </div>
+                                        <div className = "form-group">
+                                            <label> Employee Status: </label>
+                                            <input placeholder="Employee Status" name="empStatus" className="form-control" 
+                                                value={this.state.empStatus} onChange={this.changeEmpStatusHandler}/>
                                         </div>
 
                                         <button className="btn btn-success" onClick={this.updateEmployee}>Save</button>

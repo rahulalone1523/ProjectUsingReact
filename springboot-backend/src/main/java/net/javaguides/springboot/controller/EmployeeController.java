@@ -1,8 +1,10 @@
 package net.javaguides.springboot.controller;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,18 +30,25 @@ public class EmployeeController {
 	@Autowired
 	private EmployeeRepository employeeRepository;
 	
+	int empNo;
+	
+	double empSalaryUpdated;
+	
+	private static final DecimalFormat  df=new DecimalFormat ("0.00");
+	
+
 	// get all employees
 	@GetMapping("/employees")
-	public List<Employee> getAllEmployees(){
+	public List<Employee> getAllEmployees() {
 		return employeeRepository.findAll();
-	}		
-	
+	}
+
 	// create employee rest api
 	@PostMapping("/employees")
 	public Employee createEmployee(@RequestBody Employee employee) {
 		return employeeRepository.save(employee);
 	}
-	
+
 	// get employee by id rest api
 	@GetMapping("/employees/{id}")
 	public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
@@ -47,33 +56,49 @@ public class EmployeeController {
 				.orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id :" + id));
 		return ResponseEntity.ok(employee);
 	}
-	
+
 	// update employee rest api
-	
+
 	@PutMapping("/employees/{id}")
-	public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails){
+	public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails) {
 		Employee employee = employeeRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id :" + id));
-		
+
 		employee.setFirstName(employeeDetails.getFirstName());
 		employee.setLastName(employeeDetails.getLastName());
 		employee.setEmailId(employeeDetails.getEmailId());
+		employee.setEmpStatus(employeeDetails.getEmpStatus());
 		
+
 		Employee updatedEmployee = employeeRepository.save(employee);
 		return ResponseEntity.ok(updatedEmployee);
 	}
-	
+
 	// delete employee rest api
 	@DeleteMapping("/employees/{id}")
-	public ResponseEntity<Map<String, Boolean>> deleteEmployee(@PathVariable Long id){
+	public ResponseEntity<Map<String, Boolean>> deleteEmployee(@PathVariable Long id) {
 		Employee employee = employeeRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id :" + id));
-		
+
 		employeeRepository.delete(employee);
 		Map<String, Boolean> response = new HashMap<>();
 		response.put("deleted", Boolean.TRUE);
 		return ResponseEntity.ok(response);
 	}
-	
-	
+
+	@GetMapping("/elegibalemployees")
+	public ResponseEntity<List<Employee>> getEmpList() {
+		
+		List<Employee> empList = employeeRepository.findAll();
+		List<Employee> eligibalEmp = empList.stream().filter(emp -> emp.getEmpStatus().equalsIgnoreCase("Active"))
+				.collect(Collectors.toList());
+		for(Employee e:eligibalEmp) {
+		   empSalaryUpdated = e.getEmpSalary() * 1.1;
+		   e.setEmpSalary(Double.valueOf(df.format(empSalaryUpdated)));
+		   
+		}
+		System.out.println("Increamented Salary : "+eligibalEmp);
+		return ResponseEntity.ok(eligibalEmp);
+	}
+
 }
